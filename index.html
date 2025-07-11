@@ -1,0 +1,110 @@
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Get Your Amazon Credit</title>
+
+    <!-- Tailwind CSS y fuente Nunito (opcional) -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+    </head>
+    <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4" style="font-family: 'Nunito', sans-serif;">
+
+    <form id="reviewForm" class="bg-white p-6 rounded-2xl shadow-md max-w-sm w-full space-y-4">
+        <h2 class="text-2xl font-extralight text-black text-center">
+        Claim your $5 Amazon Credit
+        </h2>
+        <input type="text"   name="name"     placeholder="Your Name"        required class="w-full border p-2 rounded"/>
+        <input type="email"  name="email"    placeholder="Email Address"    required class="w-full border p-2 rounded"/>
+        <input type="text"   name="order_id" placeholder="Amazon Order ID (Optional)"   required class="w-full border p-2 rounded"/>
+
+        <label class="block font-medium text-black text-center">How was your experience?</label>
+        <div class="flex justify-center space-x-1">
+        <button type="button" class="star text-gray-300 text-3xl" value="1">&#9733;</button>
+        <button type="button" class="star text-gray-300 text-3xl" value="2">&#9733;</button>
+        <button type="button" class="star text-gray-300 text-3xl" value="3">&#9733;</button>
+        <button type="button" class="star text-gray-300 text-3xl" value="4">&#9733;</button>
+        <button type="button" class="star text-gray-300 text-3xl" value="5">&#9733;</button>
+        </div>
+        <input type="hidden" name="rating" id="ratingInput" required/>
+        <input type="text"   name="review" placeholder="Write your feedback"   class="w-full border p-2 rounded" rows="4" required/>
+
+
+        <button type="submit" class="bg-black text-white w-full py-2 rounded hover:bg-gray-800">
+        Continue
+        </button>
+    </form>
+
+    <!-- 1) Script de manejo de estrellas -->
+    <script>
+        const stars = document.querySelectorAll(".star");
+        const ratingInput = document.getElementById("ratingInput");
+        stars.forEach((star, i) => {
+        star.addEventListener("click", () => {
+            ratingInput.value = star.value;
+            stars.forEach((s, idx) => {
+            s.classList.toggle("text-yellow-400", idx < star.value);
+            s.classList.toggle("text-gray-300",   idx >= star.value);
+            });
+        });
+        });
+    </script>
+
+    <!-- 2) Script de Supabase + INSERT + redirect -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        // Inicializa Supabase
+        const supabase = createClient(
+        'https://nbaelagfuqevpwvxslvf.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5iYWVsYWdmdXFldnB3dnhzbHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MTk1NTEsImV4cCI6MjA2Njk5NTU1MX0.yyRLs8F158kB2hm7Tan5IcVRxaNly0VNK7T1vO_UlzM'  // ← pega aquí tu anon key
+        );
+
+        const form = document.getElementById("reviewForm");
+        form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        console.log("✅ Submit capturado, arrancando INSERT");
+
+        // Recoge datos
+        const f        = new FormData(form)
+        const name     = f.get("name")
+        const email    = f.get("email")
+        const order_id = f.get("order_id")
+        const rating   = parseInt(f.get("rating"))
+        const review   = f.get("review")   // ← aquí!
+
+       // 2) Inserta en Supabase incluyendo review
+        const { data, error } = await supabase
+        .from('feedback')
+        .insert([{
+            name,
+            email,
+            order_id,
+            rating,
+            review        // ← y aquí!
+        }])
+        .select('id')
+
+        console.log({ data, error })
+        if (error) {
+        console.error("❌ Error al insertar:", error.message)
+        alert("Hubo un error guardando tus datos.")
+        return
+        }
+
+        // Guarda en sessionStorage
+        sessionStorage.setItem("reviewId",   data[0].id);
+        sessionStorage.setItem("reviewData", JSON.stringify({ rating, review }));
+
+        // 2) Redirige según rating
+        if (rating < 4) {
+        window.location.href = "thankyou.html";
+        } else {
+        window.location.href = "index2.html";
+        }
+    });
+    </script>
+    </body>
+
+    </html>

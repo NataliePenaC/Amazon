@@ -1,0 +1,81 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>Next Step</title>
+
+    <!-- Tailwind + Nunito -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600&display=swap"
+        rel="stylesheet"/>
+    <style>body { font-family:'Nunito',sans-serif; }</style>
+    </head>
+    <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-6 rounded-2xl shadow-md max-w-sm w-full space-y-6">
+
+        <h2 class="text-2xl font-extralight text-black text-center">
+        You’re just one step away from earning your $5 credit!
+        </h2>
+    <p class="text-gray-800 font-light text-center">
+    You’ll receive your $5 credit within 1–2 business days. To claim it, simply copy and paste your review on Amazon.
+    </p>
+
+
+        <!-- Review box clicable -->
+        <div
+        id="reviewBox"
+        class="cursor-pointer bg-gray-50 border border-gray-300 p-4 rounded text-gray-800 text-sm whitespace-pre-wrap"
+        ></div>
+
+        <!-- Mensaje en verde, oculto hasta el click -->
+        <p id="copyMsg" class="hidden text-green-600 text-center">
+        Copied to clipboard! 🎉
+        </p>
+
+        <!-- Botón final -->
+        <button
+        id="copyBtn"
+        class="w-full bg-black text-white py-2 rounded hover:bg-gray-800 font-medium inline-flex items-center justify-center space-x-2"
+        >
+
+        <span>Copy my review &amp; Go to Amazon</span>
+        </button>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const raw = sessionStorage.getItem("reviewData");
+    if (!raw) return window.location.href = "index.html";
+    const { rating, review } = JSON.parse(raw);
+
+    if (rating < 4) {
+        return window.location.href = "thankyou.html";
+    }
+
+    const box = document.getElementById("reviewBox");
+    const msg = document.getElementById("copyMsg");
+    box.textContent = review;
+
+    // click en el cuadro
+    box.addEventListener("click", () => {
+        navigator.clipboard.writeText(review);
+        msg.classList.remove("hidden");
+    });
+
+    // click en el botón
+    document.getElementById("copyBtn")
+        .addEventListener("click", () => {
+        navigator.clipboard.writeText(review).then(() => {
+            msg.classList.remove("hidden");
+            setTimeout(() => {
+            window.location.href = "https://www.amazon.com/review/create-review";
+            }, 500);
+        });
+        });
+    });
+    </script>
+    </body>
+    </html>
